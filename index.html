@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>IPTV Playlist Manager</title>
+<style>
+body {
+  background-color: white;
+  color: black;
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+input, textarea, button {
+  margin: 5px 0;
+  padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+button {
+  cursor: pointer;
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+li {
+  padding: 8px;
+  border-bottom: 1px solid black;
+}
+</style>
+</head>
+<body>
+
+<h2>IPTV Playlist Manager</h2>
+
+<input id="name" placeholder="Channel Name">
+<input id="url" placeholder="Stream URL">
+<button onclick="addChannel()">Add Channel</button>
+
+<ul id="list"></ul>
+
+<textarea id="m3u" rows="10"></textarea>
+
+<button onclick="generateM3U()">Generate M3U</button>
+<button onclick="loadM3U()">Load M3U</button>
+<button onclick="clearAll()">Clear All</button>
+
+<script>
+let channels = [];
+
+function render() {
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  channels.forEach((c, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = c.name + ' - ' + c.url +
+      '<br><button onclick="removeChannel(' + i + ')">Delete</button>';
+    list.appendChild(li);
+  });
+}
+
+function addChannel() {
+  const name = document.getElementById('name').value;
+  const url = document.getElementById('url').value;
+  if (name && url) {
+    channels.push({name, url});
+    document.getElementById('name').value = '';
+    document.getElementById('url').value = '';
+    render();
+  }
+}
+
+function removeChannel(index) {
+  channels.splice(index, 1);
+  render();
+}
+
+function generateM3U() {
+  let m3u = '#EXTM3U\n';
+  channels.forEach(c => {
+    m3u += '#EXTINF:-1,' + c.name + '\n' + c.url + '\n';
+  });
+  document.getElementById('m3u').value = m3u;
+}
+
+function loadM3U() {
+  const text = document.getElementById('m3u').value;
+  const lines = text.split('\n');
+  channels = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].startsWith('#EXTINF')) {
+      const name = lines[i].split(',')[1];
+      const url = lines[i + 1];
+      channels.push({name, url});
+    }
+  }
+  render();
+}
+
+function clearAll() {
+  channels = [];
+  document.getElementById('m3u').value = '';
+  render();
+}
+</script>
+
+</body>
+  </html>
